@@ -12,10 +12,19 @@
         background: rgba(0,0,0,0.6); color: white; padding: 10px 20px;
         font-family: sans-serif; border-radius: 12px; font-size: 16px; z-index: 5;
       }
+      #startBtn {
+        position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+        background: #ff6b6b; color: white; border: none; padding: 12px 20px;
+        border-radius: 10px; font-size: 16px; z-index: 5;
+      }
     </style>
   </head>
   <body>
     <div id="instructions">🎁 Allow camera access, then point your camera at the printed photo to reveal the surprise 🎉</div>
+    <button id="startBtn">Start AR (tap once to enable video on iOS)</button>
+
+    <!-- Video Element (drop your wish.mp4 into assets/) -->
+    <video id="birthdayVideo" src="./assets/wish.mp4" loop muted playsinline crossorigin="anonymous"></video>
 
     <a-scene
       mindar-image="imageTargetSrc: ./assets/marker.mind; maxTrack: 1;"
@@ -27,21 +36,22 @@
 
       <!-- Marker Target -->
       <a-entity mindar-image-target="targetIndex: 0">
-        
-        <!-- Show an Image Instead of Video -->
-        <a-image src="./assets/surprise.png"
+        <!-- Video Plane (will show your video) -->
+        <a-video src="#birthdayVideo"
                  width="1.6" height="0.9"
                  position="0 0 0"
-                 rotation="0 0 0">
-        </a-image>
+                 rotation="0 0 0"
+                 visible="true">
+        </a-video>
 
-        <!-- 3D Cake (optional) -->
+        <!-- 3D Cake (replace with real cake.glb in assets/) -->
         <a-entity gltf-model="./assets/cake.glb"
                   scale="0.5 0.5 0.5"
-                  position="0 -0.6 0">
+                  position="0 -0.6 0"
+                  rotation="0 0 0">
         </a-entity>
 
-        <!-- Floating Balloons (optional) -->
+        <!-- Floating Balloons (replace with balloons.glb) -->
         <a-entity gltf-model="./assets/balloons.glb"
                   scale="0.6 0.6 0.6"
                   position="0 1.2 0"
@@ -49,12 +59,35 @@
         </a-entity>
 
         <!-- Birthday Text -->
-        <a-text value="Happy Birthday [HER_NAME] 💕"
+        <a-text id="greetingText" value="Happy Birthday [HER_NAME] 💕"
                 color="hotpink"
                 position="-0.9 1.8 0"
                 scale="1.6 1.6 1.6">
         </a-text>
       </a-entity>
     </a-scene>
+
+    <script>
+      const video = document.querySelector("#birthdayVideo");
+      const startBtn = document.querySelector("#startBtn");
+      startBtn.addEventListener("click", async () => {
+        try {
+          // trying to play (will satisfy mobile autoplay policies)
+          await video.play();
+        } catch (e) {
+          console.log("Video play prevented, user gesture required on some browsers.");
+        }
+        startBtn.style.display = "none";
+      });
+
+      // Optional: when marker found, ensure video plays
+      document.addEventListener("DOMContentLoaded", () => {
+        const sceneEl = document.querySelector('a-scene');
+        sceneEl.addEventListener('renderstart', () => {
+          // mind-ar will handle detection; we still ensure video is ready
+          video.muted = true; // keep muted to avoid autoplay blocks; users can unmute if required
+        });
+      });
+    </script>
   </body>
 </html>
