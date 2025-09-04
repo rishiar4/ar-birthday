@@ -7,11 +7,6 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.4/dist/mindar-image-aframe.prod.js"></script>
     <style>
       body { margin: 0; overflow: hidden; background: black; }
-      #instructions {
-        position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-        background: rgba(0,0,0,0.6); color: white; padding: 10px 20px;
-        font-family: sans-serif; border-radius: 12px; font-size: 16px; z-index: 5;
-      }
       #startBtn {
         position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
         background: #ff6b6b; color: white; border: none; padding: 12px 20px;
@@ -20,7 +15,7 @@
     </style>
   </head>
   <body>
-    <div id="instructions">🎁 Allow camera access, then point your camera at the printed photo to reveal the surprise 🎉</div>
+    <!-- Removed the "Allow camera access..." text -->
     <button id="startBtn">Start AR (tap once to enable video + sound)</button>
 
     <!-- Video Element -->
@@ -75,10 +70,9 @@
       const startBtn = document.querySelector("#startBtn");
       const marker = document.querySelector("#marker");
 
-      // First tap: unlock media
+      // First tap: unlock media (autoplay compliance)
       startBtn.addEventListener("click", async () => {
         try {
-          // Load but pause immediately (to satisfy autoplay policy)
           await video.play();
           video.pause();
           await audio.play();
@@ -89,14 +83,16 @@
         startBtn.style.display = "none";
       });
 
-      // Play when marker is found
+      // When marker is found → play video & audio
       marker.addEventListener("targetFound", () => {
         console.log("Marker found → play video + audio");
+        video.currentTime = 0; // restart from beginning
+        audio.currentTime = 0;
         video.play();
         audio.play();
       });
 
-      // Pause when marker is lost
+      // When marker is lost → pause video & audio
       marker.addEventListener("targetLost", () => {
         console.log("Marker lost → pause video + audio");
         video.pause();
