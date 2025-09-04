@@ -15,13 +15,11 @@
     </style>
   </head>
   <body>
-    <button id="startBtn">Start AR (tap once to enable video + sound)</button>
+    <button id="startBtn">Start AR (tap once to unlock video + sound)</button>
 
-    <!-- Video Element -->
-    <video id="birthdayVideo" src="./assets/wish.mp4" loop playsinline crossorigin="anonymous"></video>
-
-    <!-- Audio Element -->
-    <audio id="birthdayAudio" src="./assets/hbd.mp3" preload="auto" loop></audio>
+    <!-- Hidden Video + Audio (not autoplaying anymore) -->
+    <video id="birthdayVideo" src="./assets/wish.mp4" playsinline crossorigin="anonymous" style="display:none"></video>
+    <audio id="birthdayAudio" src="./assets/hbd.mp3" preload="auto" style="display:none"></audio>
 
     <a-scene
       mindar-image="imageTargetSrc: ./assets/marker.mind; maxTrack: 1;"
@@ -33,33 +31,14 @@
 
       <!-- Marker Target -->
       <a-entity mindar-image-target="targetIndex: 0" id="marker">
-        <!-- Video Plane (start hidden) -->
+        <!-- Video Plane (hidden until marker is found) -->
         <a-video id="videoPlane"
                  src="#birthdayVideo"
                  width="1.6" height="0.9"
                  position="0 0 0"
-                 rotation="0 0 0"
                  visible="false">
         </a-video>
 
-        <!-- 3D Cake -->
-        <a-entity gltf-model="./assets/cake.glb"
-                  scale="0.5 0.5 0.5"
-                  position="0 -0.6 0"
-                  visible="false"
-                  id="cake">
-        </a-entity>
-
-        <!-- Floating Balloons -->
-        <a-entity gltf-model="./assets/balloons.glb"
-                  scale="0.6 0.6 0.6"
-                  position="0 1.2 0"
-                  animation="property: position; to: 0 1.6 0; dur: 1800; dir: alternate; loop: true"
-                  visible="false"
-                  id="balloons">
-        </a-entity>
-
-        <!-- Birthday Text -->
         <a-text id="greetingText"
                 value="Happy Birthday [HER_NAME] 💕"
                 color="hotpink"
@@ -73,15 +52,12 @@
     <script>
       const video = document.querySelector("#birthdayVideo");
       const audio = document.querySelector("#birthdayAudio");
-      const startBtn = document.querySelector("#startBtn");
-      const marker = document.querySelector("#marker");
-
       const videoPlane = document.querySelector("#videoPlane");
-      const cake = document.querySelector("#cake");
-      const balloons = document.querySelector("#balloons");
       const greetingText = document.querySelector("#greetingText");
+      const marker = document.querySelector("#marker");
+      const startBtn = document.querySelector("#startBtn");
 
-      // First tap: unlock media (autoplay compliance)
+      // Unlock media (but do NOT play yet)
       startBtn.addEventListener("click", async () => {
         try {
           await video.play();
@@ -89,34 +65,28 @@
           await audio.play();
           audio.pause();
         } catch (e) {
-          console.log("Media unlock failed:", e);
+          console.warn("Unlock failed:", e);
         }
         startBtn.style.display = "none";
       });
 
-      // When marker is found → show + play everything
+      // Only when marker is found → show + play
       marker.addEventListener("targetFound", () => {
-        console.log("Marker found → show + play media");
+        console.log("Marker found → play video/audio");
+        videoPlane.setAttribute("visible", "true");
+        greetingText.setAttribute("visible", "true");
         video.currentTime = 0;
         audio.currentTime = 0;
         video.play();
         audio.play();
-
-        videoPlane.setAttribute("visible", "true");
-        cake.setAttribute("visible", "true");
-        balloons.setAttribute("visible", "true");
-        greetingText.setAttribute("visible", "true");
       });
 
-      // When marker is lost → hide + pause everything
+      // When marker is lost → pause + hide
       marker.addEventListener("targetLost", () => {
-        console.log("Marker lost → hide + pause media");
+        console.log("Marker lost → pause + hide");
         video.pause();
         audio.pause();
-
         videoPlane.setAttribute("visible", "false");
-        cake.setAttribute("visible", "false");
-        balloons.setAttribute("visible", "false");
         greetingText.setAttribute("visible", "false");
       });
     </script>
