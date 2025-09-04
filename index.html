@@ -21,10 +21,13 @@
   </head>
   <body>
     <div id="instructions">🎁 Allow camera access, then point your camera at the printed photo to reveal the surprise 🎉</div>
-    <button id="startBtn">Start AR (tap once to enable video on iOS)</button>
+    <button id="startBtn">Start AR (tap once to enable video + sound)</button>
 
     <!-- Video Element (drop your wish.mp4 into assets/) -->
-    <video id="birthdayVideo" src="./assets/wish.mp4" loop muted playsinline crossorigin="anonymous"></video>
+    <video id="birthdayVideo" src="./assets/wish.mp4" loop playsinline crossorigin="anonymous"></video>
+
+    <!-- Audio Element (add hbd.mp3 to assets/) -->
+    <audio id="birthdayAudio" src="./assets/hbd.mp3" preload="auto"></audio>
 
     <a-scene
       mindar-image="imageTargetSrc: ./assets/marker.mind; maxTrack: 1;"
@@ -69,23 +72,26 @@
 
     <script>
       const video = document.querySelector("#birthdayVideo");
+      const audio = document.querySelector("#birthdayAudio");
       const startBtn = document.querySelector("#startBtn");
+
       startBtn.addEventListener("click", async () => {
         try {
-          // trying to play (will satisfy mobile autoplay policies)
+          // try to play video
           await video.play();
+          // try to play audio
+          await audio.play();
         } catch (e) {
-          console.log("Video play prevented, user gesture required on some browsers.");
+          console.log("Autoplay blocked:", e);
         }
         startBtn.style.display = "none";
       });
 
-      // Optional: when marker found, ensure video plays
+      // Ensure video is muted=false so sound works
       document.addEventListener("DOMContentLoaded", () => {
         const sceneEl = document.querySelector('a-scene');
         sceneEl.addEventListener('renderstart', () => {
-          // mind-ar will handle detection; we still ensure video is ready
-          video.muted = true; // keep muted to avoid autoplay blocks; users can unmute if required
+          video.muted = false; // allow video sound if it has audio track
         });
       });
     </script>
