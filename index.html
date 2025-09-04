@@ -2,30 +2,29 @@
 <html>
   <head>
     <title>Happy Birthday 🎂</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.4/dist/mindar-image-aframe.prod.js"></script>
     <style>
       body { margin: 0; overflow: hidden; background: black; }
       #startBtn {
         position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-        background: #ff4081; color: white; border: none; padding: 14px 22px;
-        border-radius: 12px; font-size: 18px; z-index: 10;
-        font-family: sans-serif; cursor: pointer;
+        background: #ff6b6b; color: white; border: none; padding: 12px 20px;
+        border-radius: 10px; font-size: 16px; z-index: 5;
       }
     </style>
   </head>
   <body>
-    <!-- Start button (needed for iOS autoplay policies) -->
-    <button id="startBtn">Start Experience 🎉</button>
+    <button id="startBtn">🎁 Start AR</button>
 
-    <!-- Video -->
-    <video id="birthdayVideo" src="./assets/wish_fixed.mp4" playsinline crossorigin="anonymous" preload="auto"></video>
+    <!-- Video (hidden element, plays on marker) -->
+    <video id="birthdayVideo" src="./assets/wish_fixed.mp4"
+           loop playsinline crossorigin="anonymous"
+           style="display:none"></video>
 
     <!-- Audio -->
     <audio id="birthdayAudio" src="./assets/hbd.mp3" preload="auto" loop></audio>
 
-    <!-- AR Scene -->
     <a-scene
       mindar-image="imageTargetSrc: ./assets/marker.mind; maxTrack: 1;"
       embedded color-space="sRGB"
@@ -36,29 +35,29 @@
 
       <!-- Marker Target -->
       <a-entity mindar-image-target="targetIndex: 0" id="marker">
-        
+
         <!-- Video Plane -->
-        <a-video id="videoPlane" src="#birthdayVideo"
+        <a-video src="#birthdayVideo"
                  width="1.6" height="0.9"
                  position="0 0 0"
                  rotation="0 0 0"
-                 visible="false">
+                 visible="true">
         </a-video>
 
-        <!-- 3D Cake -->
+        <!-- Cake -->
         <a-entity gltf-model="./assets/cake.glb"
                   scale="0.5 0.5 0.5"
                   position="0 -0.6 0">
         </a-entity>
 
-        <!-- Floating Balloons -->
+        <!-- Balloons -->
         <a-entity gltf-model="./assets/balloons.glb"
                   scale="0.6 0.6 0.6"
                   position="0 1.2 0"
-                  animation="property: position; to: 0 1.6 0; dur: 2000; dir: alternate; loop: true">
+                  animation="property: position; to: 0 1.6 0; dur: 1800; dir: alternate; loop: true">
         </a-entity>
 
-        <!-- Birthday Text -->
+        <!-- Text -->
         <a-text value="Happy Birthday ❤️"
                 color="hotpink"
                 position="-0.9 1.8 0"
@@ -72,35 +71,26 @@
       const audio = document.querySelector("#birthdayAudio");
       const startBtn = document.querySelector("#startBtn");
       const marker = document.querySelector("#marker");
-      const videoPlane = document.querySelector("#videoPlane");
 
-      // Unlock media on first tap (iOS/Android requirement)
+      // Unlock video+audio on first tap
       startBtn.addEventListener("click", async () => {
         try {
-          await video.play();
-          video.pause();
-          await audio.play();
-          audio.pause();
-        } catch (err) {
-          console.log("Autoplay unlock failed:", err);
-        }
+          await video.play(); video.pause();
+          await audio.play(); audio.pause();
+        } catch (e) { console.log("Unlock failed", e); }
         startBtn.style.display = "none";
       });
 
       // Play when marker appears
       marker.addEventListener("targetFound", () => {
-        console.log("Marker found 🎯");
-        videoPlane.setAttribute("visible", "true");
         video.play();
         audio.play();
       });
 
       // Pause when marker disappears
       marker.addEventListener("targetLost", () => {
-        console.log("Marker lost ❌");
         video.pause();
         audio.pause();
-        videoPlane.setAttribute("visible", "false");
       });
     </script>
   </body>
