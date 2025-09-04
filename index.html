@@ -23,11 +23,11 @@
     <div id="instructions">🎁 Allow camera access, then point your camera at the printed photo to reveal the surprise 🎉</div>
     <button id="startBtn">Start AR (tap once to enable video + sound)</button>
 
-    <!-- Video Element (drop your wish.mp4 into assets/) -->
+    <!-- Video Element -->
     <video id="birthdayVideo" src="./assets/wish.mp4" loop playsinline crossorigin="anonymous"></video>
 
-    <!-- Audio Element (add hbd.mp3 to assets/) -->
-    <audio id="birthdayAudio" src="./assets/hbd.mp3" preload="auto"></audio>
+    <!-- Audio Element -->
+    <audio id="birthdayAudio" src="./assets/hbd.mp3" preload="auto" loop></audio>
 
     <a-scene
       mindar-image="imageTargetSrc: ./assets/marker.mind; maxTrack: 1;"
@@ -38,8 +38,8 @@
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <!-- Marker Target -->
-      <a-entity mindar-image-target="targetIndex: 0">
-        <!-- Video Plane (will show your video) -->
+      <a-entity mindar-image-target="targetIndex: 0" id="marker">
+        <!-- Video Plane -->
         <a-video src="#birthdayVideo"
                  width="1.6" height="0.9"
                  position="0 0 0"
@@ -47,14 +47,13 @@
                  visible="true">
         </a-video>
 
-        <!-- 3D Cake (replace with real cake.glb in assets/) -->
+        <!-- 3D Cake -->
         <a-entity gltf-model="./assets/cake.glb"
                   scale="0.5 0.5 0.5"
-                  position="0 -0.6 0"
-                  rotation="0 0 0">
+                  position="0 -0.6 0">
         </a-entity>
 
-        <!-- Floating Balloons (replace with balloons.glb) -->
+        <!-- Floating Balloons -->
         <a-entity gltf-model="./assets/balloons.glb"
                   scale="0.6 0.6 0.6"
                   position="0 1.2 0"
@@ -62,7 +61,7 @@
         </a-entity>
 
         <!-- Birthday Text -->
-        <a-text id="greetingText" value="Happy Birthday [HER_NAME] 💕"
+        <a-text value="Happy Birthday [HER_NAME] 💕"
                 color="hotpink"
                 position="-0.9 1.8 0"
                 scale="1.6 1.6 1.6">
@@ -74,25 +73,34 @@
       const video = document.querySelector("#birthdayVideo");
       const audio = document.querySelector("#birthdayAudio");
       const startBtn = document.querySelector("#startBtn");
+      const marker = document.querySelector("#marker");
 
+      // First tap: unlock media
       startBtn.addEventListener("click", async () => {
         try {
-          // try to play video
+          // Load but pause immediately (to satisfy autoplay policy)
           await video.play();
-          // try to play audio
+          video.pause();
           await audio.play();
+          audio.pause();
         } catch (e) {
-          console.log("Autoplay blocked:", e);
+          console.log("Media unlock failed:", e);
         }
         startBtn.style.display = "none";
       });
 
-      // Ensure video is muted=false so sound works
-      document.addEventListener("DOMContentLoaded", () => {
-        const sceneEl = document.querySelector('a-scene');
-        sceneEl.addEventListener('renderstart', () => {
-          video.muted = false; // allow video sound if it has audio track
-        });
+      // Play when marker is found
+      marker.addEventListener("targetFound", () => {
+        console.log("Marker found → play video + audio");
+        video.play();
+        audio.play();
+      });
+
+      // Pause when marker is lost
+      marker.addEventListener("targetLost", () => {
+        console.log("Marker lost → pause video + audio");
+        video.pause();
+        audio.pause();
       });
     </script>
   </body>
