@@ -1,97 +1,80 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Happy Birthday 🎂</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.4/dist/mindar-image-aframe.prod.js"></script>
-    <style>
-      body { margin: 0; overflow: hidden; background: black; }
-      #startBtn {
-        position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-        background: #ff6b6b; color: white; border: none; padding: 12px 20px;
-        border-radius: 10px; font-size: 16px; z-index: 5;
-      }
-    </style>
-  </head>
-  <body>
-    <button id="startBtn">🎁 Start AR</button>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Happy Birthday 🎉</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- A-Frame + MindAR -->
+  <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
 
-    <!-- Video (hidden element, plays on marker) -->
-    <video id="birthdayVideo" src="./assets/wish_fixed.mp4"
-           loop playsinline crossorigin="anonymous"
-           style="display:none"></video>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #startBtn {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 12px 24px; font-size: 18px;
+      background: #ff4081; color: white;
+      border: none; border-radius: 10px;
+      cursor: pointer; z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <!-- Unlock button -->
+  <button id="startBtn">🎂 Start Experience</button>
 
-    <!-- Audio -->
-    <audio id="birthdayAudio" src="./assets/hbd.mp3" preload="auto" loop></audio>
+  <!-- MindAR scene -->
+  <a-scene
+    mindar-image="imageTargetSrc: ./assets/marker.mind; autoStart: true;"
+    color-space="sRGB"
+    renderer="colorManagement: true, physicallyCorrectLights"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
 
-    <a-scene
-      mindar-image="imageTargetSrc: ./assets/marker.mind; maxTrack: 1;"
-      embedded color-space="sRGB"
-      vr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: true">
+    <!-- Camera -->
+    <a-camera position="0 0 0"></a-camera>
 
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <!-- Marker entity -->
+    <a-entity id="marker" mindar-image-target="targetIndex: 0">
+      <a-video id="arVideo" src="#birthdayVideo" width="1" height="0.6" position="0 0 0"></a-video>
+    </a-entity>
+  </a-scene>
 
-      <!-- Marker Target -->
-      <a-entity mindar-image-target="targetIndex: 0" id="marker">
+  <!-- Hidden media -->
+  <video id="birthdayVideo" src="./assets/wish.mp4"
+         loop playsinline webkit-playsinline crossorigin="anonymous" muted
+         style="display:none"></video>
+  <audio id="birthdayAudio" src="./assets/hbd.mp3" preload="auto" loop></audio>
 
-        <!-- Video Plane -->
-        <a-video src="#birthdayVideo"
-                 width="1.6" height="0.9"
-                 position="0 0 0"
-                 rotation="0 0 0"
-                 visible="true">
-        </a-video>
+  <script>
+    const video = document.querySelector("#birthdayVideo");
+    const audio = document.querySelector("#birthdayAudio");
+    const startBtn = document.querySelector("#startBtn");
+    const marker = document.querySelector("#marker");
 
-        <!-- Cake -->
-        <a-entity gltf-model="./assets/cake.glb"
-                  scale="0.5 0.5 0.5"
-                  position="0 -0.6 0">
-        </a-entity>
+    // Unlock audio/video on user gesture
+    startBtn.addEventListener("click", async () => {
+      try {
+        video.muted = false;
+        await video.play(); video.pause();
+        await audio.play(); audio.pause();
+      } catch (e) { console.log("Unlock failed", e); }
+      startBtn.style.display = "none";
+    });
 
-        <!-- Balloons -->
-        <a-entity gltf-model="./assets/balloons.glb"
-                  scale="0.6 0.6 0.6"
-                  position="0 1.2 0"
-                  animation="property: position; to: 0 1.6 0; dur: 1800; dir: alternate; loop: true">
-        </a-entity>
+    // Play when marker detected
+    marker.addEventListener("targetFound", () => {
+      video.play();
+      audio.play();
+    });
 
-        <!-- Text -->
-        <a-text value="Happy Birthday ❤️"
-                color="hotpink"
-                position="-0.9 1.8 0"
-                scale="1.6 1.6 1.6">
-        </a-text>
-      </a-entity>
-    </a-scene>
-
-    <script>
-      const video = document.querySelector("#birthdayVideo");
-      const audio = document.querySelector("#birthdayAudio");
-      const startBtn = document.querySelector("#startBtn");
-      const marker = document.querySelector("#marker");
-
-      // Unlock video+audio on first tap
-      startBtn.addEventListener("click", async () => {
-        try {
-          await video.play(); video.pause();
-          await audio.play(); audio.pause();
-        } catch (e) { console.log("Unlock failed", e); }
-        startBtn.style.display = "none";
-      });
-
-      // Play when marker appears
-      marker.addEventListener("targetFound", () => {
-        video.play();
-        audio.play();
-      });
-
-      // Pause when marker disappears
-      marker.addEventListener("targetLost", () => {
-        video.pause();
-        audio.pause();
-      });
-    </script>
-  </body>
+    // Pause when marker lost
+    marker.addEventListener("targetLost", () => {
+      video.pause();
+      audio.pause();
+    });
+  </script>
+</body>
 </html>
