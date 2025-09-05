@@ -33,6 +33,13 @@
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false">
 
+    <!-- Assets -->
+    <a-assets>
+      <video id="birthdayVideo" src="./assets/wish.mp4"
+             loop playsinline webkit-playsinline crossorigin="anonymous"></video>
+      <audio id="birthdayAudio" src="./assets/hbd.mp3" preload="auto" loop></audio>
+    </a-assets>
+
     <!-- Camera -->
     <a-camera position="0 0 0"></a-camera>
 
@@ -41,12 +48,6 @@
       <a-video id="arVideo" src="#birthdayVideo" width="1" height="0.6" position="0 0 0"></a-video>
     </a-entity>
   </a-scene>
-
-  <!-- Hidden media -->
-  <video id="birthdayVideo" src="./assets/wish.mp4"
-         loop playsinline webkit-playsinline crossorigin="anonymous" muted
-         style="display:none"></video>
-  <audio id="birthdayAudio" src="./assets/hbd.mp3" preload="auto" loop></audio>
 
   <script>
     const video = document.querySelector("#birthdayVideo");
@@ -66,17 +67,17 @@
 
     // Play when marker detected
     marker.addEventListener("targetFound", () => {
+      console.log("Marker found 🎉");
       video.play();
       audio.play();
     });
 
     // Pause when marker lost
     marker.addEventListener("targetLost", () => {
+      console.log("Marker lost ⏸️");
       video.pause();
       audio.pause();
     });
   </script>
 </body>
 </html>
-
-
