@@ -1,26 +1,103 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <title>MindAR Camera Test</title>
+    <title>Happy Birthday 🎂</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
-    <style>body { margin: 0; overflow: hidden; }</style>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.4/dist/mindar-image-aframe.prod.js"></script>
+    <style>
+      body { margin: 0; overflow: hidden; background: black; }
+      #startBtn {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #ff6b6b;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-size: 16px;
+        z-index: 5;
+      }
+    </style>
   </head>
   <body>
+    <!-- Start button to unlock media (required on mobile) -->
+    <button id="startBtn">Start AR 🎉</button>
+
+    <!-- Video -->
+    <video id="birthdayVideo" src="./assets/wish.mp4" playsinline crossorigin="anonymous"></video>
+
+    <!-- Audio -->
+    <audio id="birthdayAudio" src="./assets/hbd.mp3" preload="auto"></audio>
+
+    <!-- AR Scene -->
     <a-scene
-      mindar-image="imageTargetSrc: ./assets/marker.mind;"
-      embedded
+      mindar-image="imageTargetSrc: ./assets/marker.mind; maxTrack: 1;"
+      embedded color-space="sRGB"
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: true">
-      
-      <!-- force rear camera -->
-      <a-entity mindar-image-camera="facingMode: environment;"></a-entity>
 
-      <a-entity mindar-image-target="targetIndex: 0">
-        <a-box position="0 0 0" material="color: red;"></a-box>
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <!-- Marker -->
+      <a-entity mindar-image-target="targetIndex: 0" id="marker">
+        <!-- Video Plane -->
+        <a-video src="#birthdayVideo"
+                 width="1.6" height="0.9"
+                 position="0 0 0"
+                 rotation="0 0 0">
+        </a-video>
+
+        <!-- Cake Model -->
+        <a-entity gltf-model="./assets/cake.glb"
+                  scale="0.5 0.5 0.5"
+                  position="0 -0.6 0">
+        </a-entity>
+
+        <!-- Balloons -->
+        <a-entity gltf-model="./assets/balloons.glb"
+                  scale="0.6 0.6 0.6"
+                  position="0 1.2 0"
+                  animation="property: position; to: 0 1.6 0; dur: 1800; dir: alternate; loop: true">
+        </a-entity>
+
+        <!-- Birthday Text -->
+        <a-text value="Happy Birthday 💕"
+                color="hotpink"
+                position="-0.9 1.8 0"
+                scale="1.6 1.6 1.6">
+        </a-text>
       </a-entity>
     </a-scene>
+
+    <script>
+      const video = document.querySelector("#birthdayVideo");
+      const audio = document.querySelector("#birthdayAudio");
+      const startBtn = document.querySelector("#startBtn");
+      const marker = document.querySelector("#marker");
+
+      // Unlock media on user interaction
+      startBtn.addEventListener("click", async () => {
+        try {
+          await video.play(); video.pause();
+          await audio.play(); audio.pause();
+        } catch (e) { console.log("Unlock failed:", e); }
+        startBtn.style.display = "none";
+      });
+
+      // Play when marker is found
+      marker.addEventListener("targetFound", () => {
+        video.play();
+        audio.play();
+      });
+
+      // Pause when marker is lost
+      marker.addEventListener("targetLost", () => {
+        video.pause();
+        audio.pause();
+      });
+    </script>
   </body>
 </html>
