@@ -36,11 +36,10 @@
     <!-- Assets -->
     <a-assets>
       <video id="birthdayVideo" src="./assets/wish.mp4"
-             loop playsinline webkit-playsinline crossorigin="anonymous"></video>
-      <audio id="birthdayAudio" src="./assets/hbd.mp3" preload="auto" loop></audio>
+             loop playsinline webkit-playsinline crossorigin="anonymous" muted></video>
     </a-assets>
 
-    <!-- Use MindAR camera -->
+    <!-- MindAR camera -->
     <a-entity mindar-image-camera></a-entity>
 
     <!-- Marker entity -->
@@ -58,9 +57,8 @@
     // Unlock audio/video
     startBtn.addEventListener("click", async () => {
       try {
-        video.muted = false;
-        await video.play(); video.pause();
-        await audio.play(); audio.pause();
+        await video.play(); video.pause(); // unlock
+        await audio.play(); audio.pause(); // unlock
       } catch (e) {
         console.log("Unlock failed", e);
       }
@@ -69,6 +67,7 @@
 
     marker.addEventListener("targetFound", () => {
       console.log("📸 Marker found");
+      video.muted = false;   // unmute when marker detected
       video.play();
       audio.play();
     });
