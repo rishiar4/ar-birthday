@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Happy Birthday 🎉</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+
   <!-- A-Frame + MindAR -->
   <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
@@ -25,13 +25,13 @@
   <!-- Unlock button -->
   <button id="startBtn">🎂 Start Experience</button>
 
-  <!-- MindAR scene -->
+  <!-- Scene -->
   <a-scene
     mindar-image="imageTargetSrc: ./assets/marker.mind; autoStart: true;"
     embedded
-    color-space="sRGB"
-    renderer="colorManagement: true, physicallyCorrectLights"
-    vr-mode-ui="enabled: false">
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: true"
+    renderer="colorManagement: true, physicallyCorrectLights">
 
     <!-- Assets -->
     <a-assets>
@@ -40,8 +40,8 @@
       <audio id="birthdayAudio" src="./assets/hbd.mp3" preload="auto" loop></audio>
     </a-assets>
 
-    <!-- Camera -->
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <!-- Use MindAR camera -->
+    <a-entity mindar-image-camera></a-entity>
 
     <!-- Marker entity -->
     <a-entity id="marker" mindar-image-target="targetIndex: 0">
@@ -55,33 +55,24 @@
     const startBtn = document.querySelector("#startBtn");
     const marker = document.querySelector("#marker");
 
-    // Ensure camera permission requested (especially iOS Safari)
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(() => console.log("✅ Camera allowed"))
-        .catch(e => console.error("❌ Camera blocked", e));
-    }
-
-    // Unlock audio/video on user gesture
+    // Unlock audio/video
     startBtn.addEventListener("click", async () => {
       try {
         video.muted = false;
-        await video.play(); video.pause(); // unlock video
-        await audio.play(); audio.pause(); // unlock audio
+        await video.play(); video.pause();
+        await audio.play(); audio.pause();
       } catch (e) {
         console.log("Unlock failed", e);
       }
       startBtn.style.display = "none";
     });
 
-    // Play when marker detected
     marker.addEventListener("targetFound", () => {
       console.log("📸 Marker found");
       video.play();
       audio.play();
     });
 
-    // Pause when marker lost
     marker.addEventListener("targetLost", () => {
       console.log("👋 Marker lost");
       video.pause();
